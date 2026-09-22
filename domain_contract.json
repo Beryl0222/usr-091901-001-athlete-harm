@@ -1,5 +1,5 @@
 {
-  "contract_version": "1.0",
+  "contract_version": "1.1",
   "service_id": "athlete-harm-response",
   "service_name": "运动员网络侵害处置中枢",
   "scope": "为体育协会值班席提供线索归集、风险分级、证据保全和人工处置的统一入口。",
@@ -10,6 +10,29 @@
     "协会值班员",
     "执法联络员"
   ],
+  "intake_channels": {
+    "self": "保护对象本人或其授权代理人提交",
+    "club": "俱乐部联络员为队内成员提交",
+    "platform": "平台协查员就站内内容提交并回传处置情况",
+    "police": "执法联络员提交或就已移送事件补件"
+  },
+  "roles": {
+    "athlete": {"name": "保护对象", "channels": ["self"],
+      "permissions": ["report.submit", "evidence.read.own", "appeal.submit.own", "case.read.own"]},
+    "club": {"name": "俱乐部联络员", "channels": ["club"],
+      "permissions": ["report.submit", "evidence.read.linked", "case.read.linked"]},
+    "platform": {"name": "平台协查员", "channels": ["platform"],
+      "permissions": ["report.submit", "supplement.submit", "evidence.read.linked", "case.read.linked", "report.platform_status"]},
+    "duty": {"name": "协会值班员", "channels": ["self", "club", "platform", "police"],
+      "permissions": ["report.submit", "case.read", "case.contact.read", "decision.restrict", "decision.protect_contact", "decision.refer", "rule.publish", "appeal.review", "evidence.preserve", "audit.read"]},
+    "police": {"name": "执法联络员", "channels": ["police"],
+      "permissions": ["report.submit", "supplement.submit", "case.read.referred", "evidence.read.referred", "receipt.confirm"]}
+  },
+  "decision_types": {
+    "restrict": "限制传播（下架、屏蔽、断链等平台侧措施），由协会值班员确认",
+    "protect_contact": "联系保护对象并启动保护措施，由协会值班员确认",
+    "refer_law_enforcement": "移送执法，协会值班员发起、执法联络员接收确认"
+  },
   "states": [
     "已接收",
     "待核验",
@@ -17,10 +40,31 @@
     "待申诉",
     "已归档"
   ],
+  "classification": {
+    "opinion": "观点与正常批评：只作记录与统计，不触发任何限制或保护措施",
+    "abuse": "辱骂诽谤等一般侵害：可建议限制传播",
+    "impersonation": "冒名爆料：可建议限制传播并提示核验",
+    "threat": "人身威胁等紧迫侵害：建议立即联系保护对象并评估移送执法"
+  },
+  "scoring_dimensions": [
+    "target_scope",
+    "spread_scope",
+    "credibility",
+    "urgency"
+  ],
   "invariants": [
     "自动分析只形成建议，不直接作出处罚决定",
-    "证据修订保留原始内容哈希与保全时间",
-    "联系信息与案件研判材料分区授权"
-  ]
+    "限制传播、联系保护对象、移送执法必须由具备相应权限的人员确认",
+    "证据修订保留原始内容哈希与保全时间，原始链接失效后仍可凭时间戳、内容哈希和保全回执证明当时所见",
+    "误报申诉、规则升级、重复举报和跨平台补件只追加新记录，绝不覆盖旧判断",
+    "每次决定必须记录所采用的规则版本",
+    "联系信息与未公开身份材料分区授权，默认对研判视图不可见，每次接触留痕"
+  ],
+  "rules": {
+    "current_version": "2026-09-22-r2",
+    "changelog": [
+      {"version": "2026-09-22-r1", "note": "初始评分规则，辱骂与威胁共用紧迫度阈值", "published_by": "seed", "published_at": "2026-09-22T08:00:00Z"},
+      {"version": "2026-09-22-r2", "note": "收紧威胁判定：显式伤害意图+可信来源即建议联系保护；新增冒名爆料类别", "published_by": "seed", "published_at": "2026-09-22T09:00:00Z", "supersedes": "2026-09-22-r1"}
+    ]
+  }
 }
-

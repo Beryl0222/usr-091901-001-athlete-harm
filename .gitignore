@@ -1,4 +1,6 @@
 .env
+*.db
+data/
 *.key
 *.pem
 node_modules/
